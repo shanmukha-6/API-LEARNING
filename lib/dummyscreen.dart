@@ -1,78 +1,81 @@
-import 'dart:convert';
 import 'package:api_learning/ApiModels/MoonModal.dart';
-import 'package:api_learning/apiservices.dart';
 import 'package:flutter/material.dart';
+import '../ApiService/api_service.dart';
+import '../Model/user_model.dart';
 
-class Dummyscreen extends StatefulWidget {
-  Dummyscreen({Key? key}) : super(key: key);
+class PostApiScreen extends StatefulWidget {
+  const PostApiScreen({super.key});
 
   @override
-  _DummyscreenState createState() => _DummyscreenState();
+  State<PostApiScreen> createState() => _PostApiScreenState();
 }
 
-class _DummyscreenState extends State<Dummyscreen> {
-  MoonModel? dummy;
-  Future<void> funny() async {
-    try {
-      final body = await Apiservices().flutter();
-      if (body == null) return;
-      final json = jsonDecode(body as String) as Map<String, dynamic>;
-      setState(() {
-        dummy = MoonModel.fromJson(json);
-      });
-    } catch (e) {
-      debugPrint("Exception.$e");
-    }
+class _PostApiScreenState extends State<PostApiScreen> {
+  final TextEditingController nameController = TextEditingController();
+
+  final TextEditingController ageController = TextEditingController();
+
+  MoonModal? userData;
+
+  bool isLoading = false;
+
+  Future<void> createUser() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    userData = await ApiService().createUser(
+      nameController.text,
+      int.parse(ageController.text),
+    );
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ElevatedButton(onPressed: funny, child: Text("hi")),
-          if (dummy != null)
-            Card(
-              color: Colors.pink,
-              child: Column(
-                children: [
-                  Text(
-                    "${dummy!.id}",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  Text(
-                    "${dummy!.title}",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  Text(
-                    "${dummy!.description}",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  Text(
-                    "${dummy!.category}",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  Text(
-                    "${dummy!.price}",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  Text(
-                    "${dummy!.discountPercentage}",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  Text(
-                    "${dummy!.rating}",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  Text(
-                    "${dummy!.stock}",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                ],
-              ),
+    return Scaffold(
+      appBar: AppBar(title: const Text("POST API")),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(hintText: "Enter Name"),
             ),
-        ],
+
+            const SizedBox(height: 20),
+
+            TextField(
+              controller: ageController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(hintText: "Enter Age"),
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(onPressed: createUser, child: const Text("Submit")),
+
+            const SizedBox(height: 30),
+
+            if (isLoading) const CircularProgressIndicator(),
+
+            if (userData != null)
+              Card(
+                color: Colors.blue,
+                child: Column(
+                  children: [
+                    Text("ID : ${userData!.id}"),
+                    Text("Name : ${userData!.firstName}"),
+                    Text("Age : ${userData!.age}"),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
